@@ -13,6 +13,8 @@ select
     hired_summiters as summit_hired,
     member_summiters,
     deaths,
+    member_deaths,
+    hired_deaths,
     source_outcome as result,
     case
         when source_outcome = 'summit' then 'Summit'
@@ -24,6 +26,10 @@ select
     leader,
     nation,
     route,
+    route2,
+    route3,
+    route4,
+    host,
     season,
     disputed,
     claimed,

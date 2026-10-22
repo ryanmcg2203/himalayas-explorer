@@ -18,6 +18,7 @@ from pathlib import Path
 
 from dbfread import DBF
 
+HOST_NAMES = {1: "Nepal", 2: "China", 3: "India"}
 
 def unpack_table(archive: zipfile.ZipFile, filename: str, destination: Path) -> Path:
     member = next(name for name in archive.namelist() if name.lower().endswith(f"/himdata/{filename.lower()}.dbf"))
@@ -72,6 +73,8 @@ def main() -> None:
                 result, label = "mixed", "Turned back"
 
             route = clean(row.get("ROUTE1")).strip()
+            routes = [clean(row.get(f"ROUTE{i}")).strip() for i in range(1, 5)]
+            routes = [value for value in routes if value]
             style = "Commercial" if bool(row.get("COMRTE")) else ("Alpine" if bool(row.get("STDRTE")) else "Siege")
             records.append({
                 "id": f"{year}-{clean(row['EXPID']).strip()}",
@@ -91,7 +94,13 @@ def main() -> None:
                 "leader": clean(row.get("LEADERS")).strip(),
                 "nation": clean(row.get("NATION")).strip(),
                 "route": route,
+                "route2": routes[1] if len(routes) > 1 else "",
+                "route3": routes[2] if len(routes) > 2 else "",
+                "route4": routes[3] if len(routes) > 3 else "",
+                "host": HOST_NAMES.get(int(row.get("HOST") or 0), "Unknown"),
                 "season": int(row.get("SEASON") or 0),
+                "memberDeaths": int(row.get("MDEATHS") or 0),
+                "hiredDeaths": int(row.get("HDEATHS") or 0),
                 "disputed": bool(row.get("DISPUTED")),
                 "claimed": bool(row.get("CLAIMED")),
             })
