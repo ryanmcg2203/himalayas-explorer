@@ -27,6 +27,8 @@ Then open <http://127.0.0.1:4173>.
 The peak stats sheet is available at
 <http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
 
+The peak browser is available at <http://127.0.0.1:4173/peaks.html>.
+
 The static site reads generated JSON exports from `dist/`. Build those exports
 locally before opening the site. The reproducible source-to-mart pipeline is
 described below and preserves the UI's explicit outcome definitions.
