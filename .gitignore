@@ -1,5 +1,8 @@
 data/*.duckdb
 data/*.duckdb.wal
+data/bronze/*.json
+data/bronze/*.json.gz
+dist/*.json
 .venv/
 .ve/
 .user.yml

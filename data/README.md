@@ -1,8 +1,9 @@
 # Data
 
-The app's `dist/expeditions.json` is the website export. The compact bronze
-input at `data/bronze/expeditions.json` is generated from the official
-Himalayan Database download. The raw database is not checked in.
+The app's `dist/*.json` files are generated website exports. The compact bronze
+inputs at `data/bronze/` are generated from a local official Himalayan Database
+download. None of the raw database, bronze extracts, DuckDB file, or website
+exports are checked in or redistributed by this repository.
 
 Source: [Himalayan Database downloads](https://www.himalayandatabase.com/downloads.html)
 
@@ -10,8 +11,7 @@ The bronze layer includes `expeditions.json` and compressed `members.json.gz`. T
 member export is one row per source member-on-expedition record; the dbt layer
 turns it into `fct_expedition_member` and a heuristic `dim_person`.
 
-The current source used for the prototype is version 2.75 with the Autumn–Winter
-2025 update. To rebuild the index:
+To rebuild the index locally:
 
 ```bash
 python3 -m pip install -r requirements.txt

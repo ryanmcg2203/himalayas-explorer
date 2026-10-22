@@ -3,8 +3,9 @@
 An interactive atlas for Himalayan expeditions, risk, and changing definitions.
 
 The site combines a responsive static explorer with a local DuckDB/dbt data
-pipeline. It currently ships with 11,854 derived expedition records spanning
-1905–2025 and 439 peaks.
+pipeline. The repository contains code and documentation only; generated
+database and site data stay local because the Himalayan Database's terms
+restrict redistribution.
 
 ## Explore
 
@@ -23,7 +24,9 @@ python3 -m http.server 4173 --directory dist
 
 Then open <http://127.0.0.1:4173>.
 
-The static site reads `dist/expeditions.json`. The reproducible source-to-mart pipeline is described below and preserves the UI's explicit outcome definitions.
+The static site reads generated JSON exports from `dist/`. Build those exports
+locally before opening the site. The reproducible source-to-mart pipeline is
+described below and preserves the UI's explicit outcome definitions.
 
 ## Rebuild the data layer
 
@@ -56,9 +59,24 @@ DBT_PROFILES_DIR=. dbt build
 python scripts/export_site_data.py
 ```
 
-The raw archive is not checked in. The compact bronze input is stored at
-`data/bronze/expeditions.json` and compressed `members.json.gz`; the importer creates stable IDs for source
-IDs that collide across centuries, while preserving the original source ID.
+The raw archive, bronze extracts, DuckDB database, and static JSON exports are
+not checked in. They are ignored locally. The importer creates stable IDs for
+source IDs that collide across centuries, while preserving the original source
+ID.
+
+## Source and attribution
+
+This project is an independent exploration of the [Himalayan
+Database](https://www.himalayandatabase.com/), the expedition archives of
+Elizabeth Hawley. The local pipeline uses a downloaded snapshot and should be
+rebuilt only by a user who has obtained and accepted the database's current
+terms. The official terms state that extracts, reports, and analyses intended
+for publication require permission, and that permitted use must be credited to
+“The Himalayan Database ©.” See the [official database guide and terms](https://www.himalayandatabase.com/downloads/Himalayan%20Database%20Guide.pdf).
+
+No official database files or generated extracts are included in this public
+repository. The site is therefore a local research tool until publication
+permission is obtained.
 
 ## Ask questions with MCP
 
