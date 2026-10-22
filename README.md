@@ -1,6 +1,17 @@
 # Above Base Camp
 
-An interactive prototype atlas for Himalayan expeditions.
+An interactive atlas for Himalayan expeditions, risk, and changing definitions.
+
+The site combines a responsive static explorer with a local DuckDB/dbt data
+pipeline. It currently ships with 11,854 derived expedition records spanning
+1905–2025 and 439 peaks.
+
+## Explore
+
+The interface supports peak, outcome, era, success-definition, and denominator
+filters. It makes the metric choices visible: success can mean any recorded
+summit, a member summit excluding hired staff, or an undisputed summit; rates
+can be calculated per team member, summiter, or expedition.
 
 ## Run it
 
@@ -27,3 +38,18 @@ python scripts/export_site_data.py
 ```
 
 The dbt models live in `models/` and the semantic checks live in `tests/`. The DuckDB file is generated at `data/above_base_camp.duckdb` and is intentionally local.
+
+## Rebuild from the official database
+
+Download the current database archive from the [Himalayan Database downloads
+page](https://www.himalayandatabase.com/downloads.html), then build the compact
+site index before running dbt:
+
+```bash
+python scripts/build_data.py "/path/to/Himalayan Database.zip"
+DBT_PROFILES_DIR=. dbt build
+python scripts/export_site_data.py
+```
+
+The raw archive is not checked in. The importer creates stable IDs for source
+IDs that collide across centuries, while preserving the original source ID.
