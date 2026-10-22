@@ -9,6 +9,8 @@ import duckdb
 ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "data" / "above_base_camp.duckdb"
 OUT = ROOT / "dist" / "expeditions.json"
+PEAKS_INPUT = ROOT / "data" / "bronze" / "peaks.json"
+PEAKS_OUT = ROOT / "dist" / "peaks.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
 ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 
@@ -30,6 +32,11 @@ def main() -> None:
         row["sourceLabel"] = row["label"]
     OUT.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(rows):,} rows to {OUT}")
+
+    if not PEAKS_INPUT.exists():
+        raise SystemExit(f"Missing {PEAKS_INPUT}; run scripts/build_data.py first")
+    PEAKS_OUT.write_bytes(PEAKS_INPUT.read_bytes())
+    print(f"Exported peak metadata to {PEAKS_OUT}")
 
     conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("""
