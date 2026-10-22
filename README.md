@@ -12,7 +12,7 @@ restrict redistribution.
 The interface supports peak, outcome, era, success-definition, and denominator
 filters. It makes the metric choices visible: success can mean any recorded
 summit, a member summit excluding hired staff, or an undisputed summit; rates
-can be calculated per team member, summiter, or expedition.
+can be calculated per non-hired member, recorded summiter, or expedition.
 
 ## Run it
 
@@ -23,6 +23,9 @@ python3 -m http.server 4173 --directory dist
 ```
 
 Then open <http://127.0.0.1:4173>.
+
+The peak stats sheet is available at
+<http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
 
 The static site reads generated JSON exports from `dist/`. Build those exports
 locally before opening the site. The reproducible source-to-mart pipeline is
@@ -109,7 +112,7 @@ Available tools include expedition and climber search, full expedition evidence
 with member rosters, peak comparisons, era comparisons, and metric
 definitions. Example questions:
 
-- Compare Everest and Annapurna I per team member from 1990 onward.
+- Compare Everest and Annapurna I per non-hired member from 1990 onward.
 - Find climber profiles matching Russell, then show one person's expedition history.
 - Compare the early, expeditionary, transitional, and commercial eras.
 - Explain the denominator behind this death rate.

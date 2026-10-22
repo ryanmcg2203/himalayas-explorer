@@ -199,7 +199,7 @@ def explain_metric(metric: str) -> str:
         "recorded_success": "An expedition has at least one recorded summiter. Grain: expedition.",
         "member_success": "An expedition has at least one recorded non-hired member summiter. Grain: expedition.",
         "undisputed_success": "An expedition has a recorded summit and is not marked disputed. Grain: expedition.",
-        "death_rate": "Recorded deaths divided by the selected denominator: team members, summiters, or expeditions.",
+        "death_rate": "Recorded deaths divided by the selected denominator: non-hired members, all recorded summiters, or expeditions.",
         "person_identity": "A heuristic grouping of normalized name, year of birth, and citizenship; aliases and collisions remain possible.",
     }
     return text_result({"metric": metric, "explanation": definitions.get(metric, "Unknown metric. Try recorded_success, member_success, undisputed_success, death_rate, or person_identity.")})
