@@ -7,7 +7,7 @@ exports are checked in or redistributed by this repository.
 
 Source: [Himalayan Database downloads](https://www.himalayandatabase.com/downloads.html)
 
-The bronze layer includes `expeditions.json` and compressed `members.json.gz`. The
+The bronze layer includes `expeditions.json`, `peaks.json`, and compressed `members.json.gz`. The
 member export is one row per source member-on-expedition record; the dbt layer
 turns it into `fct_expedition_member` and a heuristic `dim_person`.
 

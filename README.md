@@ -59,7 +59,7 @@ DBT_PROFILES_DIR=. dbt build
 python scripts/export_site_data.py
 ```
 
-The raw archive, bronze extracts, DuckDB database, and static JSON exports are
+The raw archive, bronze extracts (including peak metadata), DuckDB database, and static JSON exports are
 not checked in. They are ignored locally. The importer creates stable IDs for
 source IDs that collide across centuries, while preserving the original source
 ID.

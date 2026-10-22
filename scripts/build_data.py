@@ -54,7 +54,7 @@ def main() -> None:
             peaks_path = unpack_table(archive, "peaks", temp_path)
             exped = list(DBF(str(exped_path), load=False, char_decode_errors="ignore"))
             members = list(DBF(str(members_path), load=False, char_decode_errors="ignore"))
-            peaks = DBF(str(peaks_path), load=True, char_decode_errors="ignore")
+            peaks = list(DBF(str(peaks_path), load=True, char_decode_errors="ignore"))
 
         peak_names = {row["PEAKID"]: clean(row["PKNAME"]).strip() for row in peaks}
         records = []
@@ -98,6 +98,26 @@ def main() -> None:
 
     records.sort(key=lambda item: (item["year"], item["id"]))
     output.write_text(json.dumps(records, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    peak_output = output.parent / "peaks.json"
+    peak_records = []
+    for row in peaks:
+        peak_records.append({
+            "peakId": clean(row.get("PEAKID")).strip(),
+            "name": clean(row.get("PKNAME")).strip(),
+            "alternateName": clean(row.get("PKNAME2")).strip(),
+            "location": clean(row.get("LOCATION")).strip(),
+            "heightM": int(row.get("HEIGHTM") or 0),
+            "open": bool(row.get("OPEN")),
+            "unlisted": bool(row.get("UNLISTED")),
+            "trekking": bool(row.get("TREKKING")),
+            "firstYear": clean(row.get("PYEAR")).strip(),
+            "firstSeason": int(row.get("PSEASON") or 0),
+            "firstExpeditionId": clean(row.get("PEXPID")).strip(),
+            "firstSummiters": clean(row.get("PSUMMITERS")).strip(),
+            "country": clean(row.get("PCOUNTRY")).strip(),
+        })
+    peak_output.write_text(json.dumps(peak_records, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     member_records = []
     for row in members:
