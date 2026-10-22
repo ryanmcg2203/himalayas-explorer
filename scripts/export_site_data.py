@@ -9,6 +9,7 @@ import duckdb
 ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "data" / "above_base_camp.duckdb"
 OUT = ROOT / "dist" / "expeditions.json"
+PEOPLE_OUT = ROOT / "dist" / "people.json"
 
 
 def main() -> None:
@@ -28,6 +29,46 @@ def main() -> None:
         row["sourceLabel"] = row["label"]
     OUT.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(rows):,} rows to {OUT}")
+
+    conn = duckdb.connect(str(DB), read_only=True)
+    result = conn.execute("""
+        select person_key, full_name, citizenship, year, mountain,
+               summit_success, died, is_hired
+        from fct_expedition_member
+        where full_name <> ''
+        order by person_key, year
+    """)
+    columns = [column[0] for column in result.description]
+    people = {}
+    for values in result.fetchall():
+        row = dict(zip(columns, values))
+        key = row["person_key"]
+        person = people.setdefault(key, {
+            "personKey": key,
+            "name": row["full_name"],
+            "citizenship": row["citizenship"],
+            "appearances": 0,
+            "summits": 0,
+            "deaths": 0,
+            "hiredAppearances": 0,
+            "peaks": set(),
+            "years": set(),
+        })
+        person["appearances"] += 1
+        person["summits"] += int(row["summit_success"])
+        person["deaths"] += int(row["died"])
+        person["hiredAppearances"] += int(row["is_hired"])
+        person["peaks"].add(row["mountain"])
+        person["years"].add(row["year"])
+    conn.close()
+    people_rows = []
+    for person in people.values():
+        person["peaks"] = sorted(person["peaks"])
+        person["years"] = sorted(person["years"])
+        people_rows.append(person)
+    people_rows.sort(key=lambda item: (-item["appearances"], item["name"]))
+    PEOPLE_OUT.write_text(json.dumps(people_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
 
 
 if __name__ == "__main__":
