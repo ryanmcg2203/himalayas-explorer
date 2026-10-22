@@ -1,7 +1,8 @@
 # Data
 
-The app's `dist/expeditions.json` is a compact derived index generated from
-the official Himalayan Database download. The raw database is not checked in.
+The app's `dist/expeditions.json` is the website export. The compact bronze
+input at `data/bronze/expeditions.json` is generated from the official
+Himalayan Database download. The raw database is not checked in.
 
 Source: [Himalayan Database downloads](https://www.himalayandatabase.com/downloads.html)
 

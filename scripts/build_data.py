@@ -42,7 +42,7 @@ def main() -> None:
     if not archive_path.exists():
         raise SystemExit(f"Archive not found: {archive_path}")
 
-    output = Path(__file__).resolve().parents[1] / "dist" / "expeditions.json"
+    output = Path(__file__).resolve().parents[1] / "data" / "bronze" / "expeditions.json"
     output.parent.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="hdb-") as temp:

@@ -21,4 +21,4 @@ select
     cast(season as integer) as season,
     cast(disputed as boolean) as disputed,
     cast(claimed as boolean) as claimed
-from read_json_auto('dist/expeditions.json')
+from read_json_auto('data/bronze/expeditions.json')

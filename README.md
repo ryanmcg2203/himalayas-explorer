@@ -51,5 +51,6 @@ DBT_PROFILES_DIR=. dbt build
 python scripts/export_site_data.py
 ```
 
-The raw archive is not checked in. The importer creates stable IDs for source
+The raw archive is not checked in. The compact bronze input is stored at
+`data/bronze/expeditions.json`; the importer creates stable IDs for source
 IDs that collide across centuries, while preserving the original source ID.
