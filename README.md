@@ -59,3 +59,43 @@ python scripts/export_site_data.py
 The raw archive is not checked in. The compact bronze input is stored at
 `data/bronze/expeditions.json` and compressed `members.json.gz`; the importer creates stable IDs for source
 IDs that collide across centuries, while preserving the original source ID.
+
+## Ask questions with MCP
+
+The website is the visual layer. The local MCP server exposes the tested
+DuckDB marts as focused tools that an MCP-compatible agent can use to answer
+natural-language questions with traceable records and explicit definitions.
+
+After building the database, start the server from the project directory:
+
+```bash
+source .venv/bin/activate
+python mcp_server.py
+```
+
+Configure it as a local stdio server in your MCP client. Use absolute paths in
+the client configuration, for example:
+
+```json
+{
+  "mcpServers": {
+    "above-base-camp": {
+      "command": "/absolute/path/to/himalayas-explorer/.venv/bin/python",
+      "args": ["/absolute/path/to/himalayas-explorer/mcp_server.py"]
+    }
+  }
+}
+```
+
+Available tools include expedition and climber search, full expedition evidence
+with member rosters, peak comparisons, era comparisons, and metric
+definitions. Example questions:
+
+- Compare Everest and Annapurna I per team member from 1990 onward.
+- Find climber profiles matching Russell, then show one person's expedition history.
+- Compare the early, expeditionary, transitional, and commercial eras.
+- Explain the denominator behind this death rate.
+
+The server is deliberately not an LLM or a free-form SQL endpoint: it gives an
+agent safe, bounded tools over the already-built DuckDB marts. The natural
+language layer comes from the MCP client.
