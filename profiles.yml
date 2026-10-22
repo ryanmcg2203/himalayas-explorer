@@ -1,0 +1,7 @@
+above_base_camp:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: data/above_base_camp.duckdb
+      threads: 4
