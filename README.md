@@ -39,6 +39,11 @@ python scripts/export_site_data.py
 
 The dbt models live in `models/` and the semantic checks live in `tests/`. The DuckDB file is generated at `data/above_base_camp.duckdb` and is intentionally local.
 
+The member layer adds 94,999 person-on-expedition records in
+`fct_expedition_member` and a cautious, heuristic `dim_person`. Person
+identity is grouped by normalized name, year of birth, and citizenship; it is
+not presented as perfect identity resolution.
+
 ## Rebuild from the official database
 
 Download the current database archive from the [Himalayan Database downloads
@@ -52,5 +57,5 @@ python scripts/export_site_data.py
 ```
 
 The raw archive is not checked in. The compact bronze input is stored at
-`data/bronze/expeditions.json`; the importer creates stable IDs for source
+`data/bronze/expeditions.json` and compressed `members.json.gz`; the importer creates stable IDs for source
 IDs that collide across centuries, while preserving the original source ID.
