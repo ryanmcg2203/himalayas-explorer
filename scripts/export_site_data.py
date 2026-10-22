@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "data" / "above_base_camp.duckdb"
 OUT = ROOT / "dist" / "expeditions.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
+ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 
 
 def main() -> None:
@@ -69,6 +70,23 @@ def main() -> None:
     people_rows.sort(key=lambda item: (-item["appearances"], item["name"]))
     PEOPLE_OUT.write_text(json.dumps(people_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
+
+    conn = duckdb.connect(str(DB), read_only=True)
+    activity = conn.execute("""
+        select person_key, expedition_id, year, mountain, status,
+               is_hired, summit_success, died
+        from fct_expedition_member
+        where full_name <> ''
+        order by person_key, year
+    """).fetchall()
+    conn.close()
+    activity_rows = [{
+        "personKey": row[0], "expeditionId": row[1], "year": row[2],
+        "mountain": row[3], "status": row[4], "hired": row[5],
+        "summit": row[6], "died": row[7],
+    } for row in activity]
+    ACTIVITY_OUT.write_text(json.dumps(activity_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(activity_rows):,} activity rows to {ACTIVITY_OUT}")
 
 
 if __name__ == "__main__":
