@@ -13,6 +13,7 @@ PEAKS_INPUT = ROOT / "data" / "bronze" / "peaks.json"
 PEAKS_OUT = ROOT / "dist" / "peaks.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
 ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
+MEMBERS_OUT = ROOT / "dist" / "expedition_members.json"
 
 
 def main() -> None:
@@ -94,6 +95,41 @@ def main() -> None:
     } for row in activity]
     ACTIVITY_OUT.write_text(json.dumps(activity_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(activity_rows):,} activity rows to {ACTIVITY_OUT}")
+
+    conn = duckdb.connect(str(DB), read_only=True)
+    result = conn.execute("""
+        select expedition_id, person_key, full_name, first_name, last_name,
+               citizenship, age, status, occupation, is_leader, is_support,
+               is_hired, is_sherpa, summit_success, summit_claimed,
+               summit_disputed, reached_high_point, oxygen_used, died,
+               death_date, death_type, death_height_m, death_class,
+               had_ams, weather_related, injured
+        from fct_expedition_member
+        where full_name <> ''
+        order by expedition_id, is_hired, full_name
+    """)
+    columns = [column[0] for column in result.description]
+    member_rows = []
+    for values in result.fetchall():
+        row = dict(zip(columns, values))
+        member_rows.append({
+            "expeditionId": row["expedition_id"], "personKey": row["person_key"],
+            "name": row["full_name"], "firstName": row["first_name"],
+            "lastName": row["last_name"], "citizenship": row["citizenship"],
+            "age": row["age"], "status": row["status"], "occupation": row["occupation"],
+            "leader": row["is_leader"], "support": row["is_support"],
+            "hired": row["is_hired"], "sherpa": row["is_sherpa"],
+            "summit": row["summit_success"], "claimed": row["summit_claimed"],
+            "disputed": row["summit_disputed"], "highPoint": row["reached_high_point"],
+            "oxygen": row["oxygen_used"], "died": row["died"],
+            "deathDate": row["death_date"], "deathType": row["death_type"],
+            "deathHeight": row["death_height_m"], "deathClass": row["death_class"],
+            "ams": row["had_ams"], "weather": row["weather_related"],
+            "injured": row["injured"],
+        })
+    conn.close()
+    MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(member_rows):,} expedition members to {MEMBERS_OUT}")
 
 
 if __name__ == "__main__":

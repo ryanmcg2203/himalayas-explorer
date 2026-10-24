@@ -32,6 +32,10 @@ The peak browser is available at <http://127.0.0.1:4173/peaks.html>.
 The heuristic climber browser and profile pages are available at
 <http://127.0.0.1:4173/people.html>.
 
+The expedition index and individual records are available at
+<http://127.0.0.1:4173/expeditions.html> and
+<http://127.0.0.1:4173/expedition.html?id=1953-...>.
+
 The static site reads generated JSON exports from `dist/`. Build those exports
 locally before opening the site. The reproducible source-to-mart pipeline is
 described below and preserves the UI's explicit outcome definitions.
