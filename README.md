@@ -9,10 +9,10 @@ restrict redistribution.
 
 ## Explore
 
-The interface supports peak, outcome, era, success-definition, and denominator
-filters. It makes the metric choices visible: success can mean any recorded
-summit, a member summit excluding hired staff, or an undisputed summit; rates
-can be calculated per non-hired member, recorded summiter, or expedition.
+The interface supports peak, measure, and grouping controls. It makes the
+metric choices visible: the chart can show expeditions, member summits,
+success rate, or deaths, grouped by year, decade, season, oxygen use, or
+member/hired-staff population.
 
 ## Run it
 
@@ -87,8 +87,8 @@ for publication require permission, and that permitted use must be credited to
 “The Himalayan Database ©.” See the [official database guide and terms](https://www.himalayandatabase.com/downloads/Himalayan%20Database%20Guide.pdf).
 
 No official database files or generated extracts are included in this public
-repository. The site is therefore a local research tool until publication
-permission is obtained.
+repository. The site is therefore a local, derived-data explorer until
+publication permission is obtained.
 
 ## Ask questions with MCP
 
