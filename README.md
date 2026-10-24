@@ -1,6 +1,6 @@
-# Above Base Camp
+# Himalayas Explorer
 
-An interactive atlas for Himalayan expeditions, risk, and changing definitions.
+A local explorer for Himalayan expeditions, ascents, and deaths.
 
 The site combines a responsive static explorer with a local DuckDB/dbt data
 pipeline. The repository contains code and documentation only; generated
@@ -29,7 +29,7 @@ The peak stats sheet is available at
 
 The peak browser is available at <http://127.0.0.1:4173/peaks.html>.
 
-The heuristic climber browser and profile pages are available at
+The provisional climber browser and profile pages are available at
 <http://127.0.0.1:4173/people.html>.
 
 The expedition index and individual records are available at
@@ -55,7 +55,7 @@ python scripts/export_site_data.py
 The dbt models live in `models/` and the semantic checks live in `tests/`. The DuckDB file is generated at `data/above_base_camp.duckdb` and is intentionally local.
 
 The member layer adds 94,999 person-on-expedition records in
-`fct_expedition_member` and a cautious, heuristic `dim_person`. Person
+`fct_expedition_member` and a cautious, provisional `dim_person`. Person
 identity is grouped by normalized name, year of birth, and citizenship; it is
 not presented as perfect identity resolution.
 
