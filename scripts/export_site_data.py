@@ -29,6 +29,9 @@ def main() -> None:
         row["sourceId"] = row.pop("source_id")
         row["peakId"] = row.pop("peak_id")
         row["summitHired"] = row.pop("summit_hired")
+        row["leaderOrRole"] = row.pop("leader_or_role")
+        row["leaderKind"] = row.pop("leader_kind")
+        row["leaderName"] = row.pop("leader_name")
         row["sourceResult"] = row["result"]
         row["sourceLabel"] = row["label"]
     OUT.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
