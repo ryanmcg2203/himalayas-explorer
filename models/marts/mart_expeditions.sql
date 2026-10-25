@@ -3,6 +3,12 @@
 select
     id,
     source_id,
+    case
+        when year < 1950 then 'early'
+        when year < 1970 then 'expeditionary'
+        when year < 1990 then 'transitional'
+        else 'commercial'
+    end as era,
     year,
     mountain,
     peak_id,

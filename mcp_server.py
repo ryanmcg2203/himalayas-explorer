@@ -1,4 +1,4 @@
-"""Above Base Camp MCP server.
+"""Himalayas Explorer MCP server.
 
 Expose the tested DuckDB marts as focused tools for natural-language agents.
 Run with: python mcp_server.py
@@ -15,16 +15,51 @@ from mcp.server.mcpserver import MCPServer
 
 ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "data" / "above_base_camp.duckdb"
-mcp = MCPServer("Above Base Camp")
+mcp = MCPServer("Himalayas Explorer")
+
+SUCCESS_COLUMNS = {
+    "recorded": "has_recorded_summit",
+    "member": "has_member_summit",
+    "undisputed": "has_undisputed_summit",
+}
+DENOMINATORS = {
+    "team_member": {
+        "column": "team",
+        "death_column": "member_deaths",
+        "label": "non-hired member attempts",
+    },
+    "summiter": {
+        "column": "summiters",
+        "death_column": "deaths",
+        "label": "recorded summiters",
+    },
+    "expedition": {
+        "column": "1",
+        "death_column": "deaths",
+        "label": "expedition rows",
+    },
+}
 
 
 def query(sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
+    if not DB_PATH.exists():
+        raise RuntimeError(
+            f"DuckDB database not found at {DB_PATH}. Run dbt build and "
+            "scripts/export_site_data.py first."
+        )
     conn = duckdb.connect(str(DB_PATH), read_only=True)
-    result = conn.execute(sql, params or [])
-    columns = [column[0] for column in result.description]
-    rows = [dict(zip(columns, values)) for values in result.fetchall()]
-    conn.close()
-    return rows
+    try:
+        result = conn.execute(sql, params or [])
+        columns = [column[0] for column in result.description]
+        return [dict(zip(columns, values)) for values in result.fetchall()]
+    finally:
+        conn.close()
+
+
+def like_pattern(value: str) -> str:
+    """Build a literal substring LIKE pattern, not a wildcard expression."""
+    escaped = value.lower().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return f"%{escaped}%"
 
 
 def text_result(payload: Any) -> str:
@@ -41,15 +76,16 @@ def search_expeditions(
 ) -> str:
     """Find expedition records by peak, leader, route, nation, or year."""
     limit = max(1, min(limit, 100))
-    needle = f"%{query_text.lower()}%"
+    needle = like_pattern(query_text)
     rows = query(
         """
-        select id, year, mountain, leader, nation, route, result, label,
-               team, summiters, deaths, oxygen, disputed
+        select id, year, mountain, leader_name, leader_or_role, leader_kind,
+               nation, route, result, label, team, summiters, deaths,
+               member_deaths, oxygen, disputed
         from mart_expeditions
         where year between ? and ?
           and (? = '' or lower(mountain) = lower(?))
-          and (? = '' or lower(concat_ws(' ', mountain, leader, nation, route, id)) like ?)
+          and (? = '' or lower(concat_ws(' ', mountain, leader_name, leader_or_role, nation, route, id)) like ? escape '\\')
         order by year desc, mountain
         limit ?
         """,
@@ -124,27 +160,41 @@ def compare_peaks(
     """Compare selected peaks with explicit success and rate definitions."""
     if not peaks:
         return text_result({"error": "Provide at least one peak name."})
+    if len(peaks) > 50:
+        return text_result({"error": "Provide no more than 50 peak names at a time."})
+    peaks = list(dict.fromkeys(peak.strip() for peak in peaks if peak.strip()))
+    if not peaks:
+        return text_result({"error": "Provide at least one non-empty peak name."})
     if success_definition not in {"recorded", "member", "undisputed"}:
         return text_result({"error": "success_definition must be recorded, member, or undisputed."})
     if denominator not in {"team_member", "summiter", "expedition"}:
         return text_result({"error": "denominator must be team_member, summiter, or expedition."})
     success_column = {"recorded": "has_recorded_summit", "member": "has_member_summit", "undisputed": "has_undisputed_summit"}[success_definition]
-    base_column = {"team_member": "team", "summiter": "summiters", "expedition": "1"}[denominator]
+    denominator_spec = DENOMINATORS[denominator]
+    base_column = denominator_spec["column"]
+    death_column = denominator_spec["death_column"]
     placeholders = ",".join("?" for _ in peaks)
     rows = query(
         f"""
         select mountain, count(*) as expeditions,
                sum(case when {success_column} then 1 else 0 end) as successes,
-               sum(deaths) as deaths,
+               round(100.0 * sum(case when {success_column} then 1 else 0 end) / nullif(count(*), 0), 2) as success_rate_pct,
+               sum({death_column}) as deaths,
                sum({base_column}) as denominator_total,
-               round(100.0 * sum(deaths) / nullif(sum({base_column}), 0), 2) as death_rate_pct
+               round(100.0 * sum({death_column}) / nullif(sum({base_column}), 0), 2) as deaths_per_100_denominator
         from mart_expeditions
         where year between ? and ? and mountain in ({placeholders})
-        group by mountain order by death_rate_pct desc
+        group by mountain order by deaths_per_100_denominator desc
         """,
         [year_from, year_to, *peaks],
     )
-    return text_result({"definition": success_definition, "denominator": denominator, "results": rows})
+    return text_result({
+        "success_definition": success_definition,
+        "denominator": denominator,
+        "success_rate_definition": "successful expeditions / expedition rows",
+        "death_rate_definition": f"{denominator_spec['death_column']} / {denominator_spec['label']} × 100",
+        "results": rows,
+    })
 
 
 @mcp.tool()
@@ -164,32 +214,36 @@ def compare_eras(
         "member": "has_member_summit",
         "undisputed": "has_undisputed_summit",
     }[success_definition]
-    base_column = {"team_member": "team", "summiter": "summiters", "expedition": "1"}[denominator]
+    denominator_spec = DENOMINATORS[denominator]
+    base_column = denominator_spec["column"]
+    death_column = denominator_spec["death_column"]
     rows = query(
         f"""
         with classified as (
-            select *, case
-                when year < 1950 then 'early'
-                when year < 1970 then 'expeditionary'
-                when year < 1990 then 'transitional'
-                else 'commercial'
-            end as era
+            select *
             from mart_expeditions
             where year between ? and ?
         )
         select era, min(year) as first_year, max(year) as last_year,
                count(*) as expeditions,
                sum(case when {success_column} then 1 else 0 end) as successes,
-               sum(deaths) as deaths,
+               round(100.0 * sum(case when {success_column} then 1 else 0 end) / nullif(count(*), 0), 2) as success_rate_pct,
+               sum({death_column}) as deaths,
                sum({base_column}) as denominator_total,
-               round(100.0 * sum(deaths) / nullif(sum({base_column}), 0), 2) as death_rate_pct
+               round(100.0 * sum({death_column}) / nullif(sum({base_column}), 0), 2) as deaths_per_100_denominator
         from classified
         group by era
         order by first_year
         """,
         [year_from, year_to],
     )
-    return text_result({"definition": success_definition, "denominator": denominator, "results": rows})
+    return text_result({
+        "success_definition": success_definition,
+        "denominator": denominator,
+        "success_rate_definition": "successful expeditions / expedition rows",
+        "death_rate_definition": f"{denominator_spec['death_column']} / {denominator_spec['label']} × 100",
+        "results": rows,
+    })
 
 
 @mcp.tool()
@@ -199,8 +253,8 @@ def explain_metric(metric: str) -> str:
         "recorded_success": "An expedition has at least one recorded summiter. Grain: expedition.",
         "member_success": "An expedition has at least one recorded non-hired member summiter. Grain: expedition.",
         "undisputed_success": "An expedition has a recorded summit and is not marked disputed. Grain: expedition.",
-        "death_rate": "Recorded deaths divided by the selected denominator: non-hired members, all recorded summiters, or expeditions.",
-        "person_identity": "A heuristic grouping of normalized name, year of birth, and citizenship; aliases and collisions remain possible.",
+        "death_rate": "The selected death numerator divided by the selected denominator, reported as deaths per 100 denominator units. Team-member rates use member_deaths; summiter and expedition rates use recorded deaths.",
+        "person_identity": "A heuristic grouping of normalized name, year of birth, and citizenship; aliases and collisions remain possible. Profiles are classified low, moderate, or review confidence.",
     }
     return text_result({"metric": metric, "explanation": definitions.get(metric, "Unknown metric. Try recorded_success, member_success, undisputed_success, death_rate, or person_identity.")})
 

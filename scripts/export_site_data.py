@@ -44,9 +44,11 @@ def main() -> None:
 
     conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("""
-        select person_key, full_name, citizenship, year, mountain,
-               summit_success, died, is_hired
-        from fct_expedition_member
+        select f.person_key, f.full_name, f.citizenship, f.year, f.mountain,
+               f.summit_success, f.died, f.is_hired,
+               d.identity_confidence, d.identity_method
+        from fct_expedition_member f
+        join dim_person d using (person_key)
         where full_name <> ''
         order by person_key, year
     """)
@@ -59,6 +61,8 @@ def main() -> None:
             "personKey": key,
             "name": row["full_name"],
             "citizenship": row["citizenship"],
+            "identityConfidence": row["identity_confidence"],
+            "identityMethod": row["identity_method"],
             "appearances": 0,
             "summits": 0,
             "deaths": 0,

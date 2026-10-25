@@ -16,13 +16,21 @@ member/hired-staff population.
 
 ## Run it
 
-From this directory:
+The repository contains code and documentation only. To build the local
+snapshot and run the explorer:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+python scripts/build_data.py "/path/to/Himalayan Database.zip"
+DBT_PROFILES_DIR=. dbt build
+python scripts/export_site_data.py
 python3 -m http.server 4173 --directory dist
 ```
 
-Then open <http://127.0.0.1:4173>.
+Then open <http://127.0.0.1:4173>. If port 4173 is already in use, stop the
+existing local server or choose another port.
 
 The peak stats sheet is available at
 <http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
@@ -36,40 +44,14 @@ The expedition index and individual records are available at
 <http://127.0.0.1:4173/expeditions.html> and
 <http://127.0.0.1:4173/expedition.html?id=1953-...>.
 
-The static site reads generated JSON exports from `dist/`. Build those exports
-locally before opening the site. The reproducible source-to-mart pipeline is
-described below and preserves the UI's explicit outcome definitions.
+The dbt models live in `models/` and the semantic checks live in `tests/`. The
+DuckDB file and generated JSON exports are intentionally local. The member
+layer and provisional identity model are rebuilt from the same snapshot; do
+not treat a profile as a confirmed real-world identity.
 
-## Rebuild the data layer
-
-Create a project-local environment, install the Python tools, then run dbt and export the tested mart:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
-DBT_PROFILES_DIR=. dbt build
-python scripts/export_site_data.py
-```
-
-The dbt models live in `models/` and the semantic checks live in `tests/`. The DuckDB file is generated at `data/above_base_camp.duckdb` and is intentionally local.
-
-The member layer adds 94,999 person-on-expedition records in
-`fct_expedition_member` and a cautious, provisional `dim_person`. Person
-identity is grouped by normalized name, year of birth, and citizenship; it is
-not presented as perfect identity resolution.
-
-## Rebuild from the official database
-
-Download the current database archive from the [Himalayan Database downloads
-page](https://www.himalayandatabase.com/downloads.html), then build the compact
-site index before running dbt:
-
-```bash
-python scripts/build_data.py "/path/to/Himalayan Database.zip"
-DBT_PROFILES_DIR=. dbt build
-python scripts/export_site_data.py
-```
+To rebuild from a newer official snapshot, download the current database
+archive from the [Himalayan Database downloads page](https://www.himalayandatabase.com/downloads.html)
+and repeat the commands above.
 
 The raw archive, bronze extracts (including peak metadata), DuckDB database, and static JSON exports are
 not checked in. They are ignored locally. The importer creates stable IDs for
@@ -82,9 +64,12 @@ This project is an independent exploration of the [Himalayan
 Database](https://www.himalayandatabase.com/), the expedition archives of
 Elizabeth Hawley. The local pipeline uses a downloaded snapshot and should be
 rebuilt only by a user who has obtained and accepted the database's current
-terms. The official terms state that extracts, reports, and analyses intended
-for publication require permission, and that permitted use must be credited to
-“The Himalayan Database ©.” See the [official database guide and terms](https://www.himalayandatabase.com/downloads/Himalayan%20Database%20Guide.pdf).
+terms. The [official database guide and terms](https://www.himalayandatabase.com/downloads/Himalayan%20Database%20Guide.pdf)
+state: “When use is permitted, all extracts, reports and analyses from the
+Himalayan Database must be credited to ‘The Himalayan Database ©.’” The same
+terms say that extracts, reports, and analyses may not be used or republished
+without consent, and that database content may not be copied or linked to
+internet websites without prior written permission.
 
 No official database files or generated extracts are included in this public
 repository. The site is therefore a local, derived-data explorer until
@@ -109,7 +94,7 @@ the client configuration, for example:
 ```json
 {
   "mcpServers": {
-    "above-base-camp": {
+    "himalayas-explorer": {
       "command": "/absolute/path/to/himalayas-explorer/.venv/bin/python",
       "args": ["/absolute/path/to/himalayas-explorer/mcp_server.py"]
     }
