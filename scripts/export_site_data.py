@@ -209,7 +209,7 @@ def main() -> None:
 
     conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("""
-        select expedition_id, person_key, full_name, first_name, last_name,
+        select expedition_id, person_key, year, mountain, full_name, first_name, last_name,
                citizenship, age, status, occupation, is_leader, is_support,
                is_hired, is_sherpa, summit_success, summit_claimed,
                summit_disputed, reached_high_point, oxygen_used, died,
@@ -225,6 +225,7 @@ def main() -> None:
         row = dict(zip(columns, values))
         member_rows.append({
             "expeditionId": row["expedition_id"], "personKey": row["person_key"],
+            "year": row["year"], "mountain": row["mountain"],
             "name": row["full_name"], "firstName": row["first_name"],
             "lastName": row["last_name"], "citizenship": row["citizenship"],
             "age": row["age"], "status": row["status"], "occupation": row["occupation"],
