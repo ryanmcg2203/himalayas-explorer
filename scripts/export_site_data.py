@@ -8,6 +8,7 @@ import duckdb
 
 ROOT = Path(__file__).resolve().parents[1]
 DB = ROOT / "data" / "above_base_camp.duckdb"
+FREDDY_KEY = "easter-egg-freddy-t-bear"
 OUT = ROOT / "dist" / "expeditions.json"
 PEAKS_INPUT = ROOT / "data" / "bronze" / "peaks.json"
 PEAKS_OUT = ROOT / "dist" / "peaks.json"
@@ -203,6 +204,27 @@ def main() -> None:
             "peaks": json.loads(peaks_json),
             "years": json.loads(years_json),
         })
+    people_rows.append({
+        "personKey": FREDDY_KEY,
+        "name": "Freddy T. Bear",
+        "citizenship": "Ireland",
+        "identityConfidence": "easter egg",
+        "identityMethod": "curated site character",
+        "appearances": 1,
+        "summits": 0,
+        "deaths": 0,
+        "hiredAppearances": 0,
+        "peaks": ["Everest"],
+        "years": [2004],
+        "birthYear": None,
+        "identityReason": "Curated educational expedition companion entry",
+        "possibleMerge": False,
+        "firstYear": 2004,
+        "lastYear": 2004,
+        "topPeakId": "EVER",
+        "topPeak": "Everest",
+        "easterEgg": True,
+    })
     people_rows.sort(key=lambda item: (-item["appearances"], item["name"]))
     PEOPLE_OUT.write_text(json.dumps(people_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
@@ -241,6 +263,17 @@ def main() -> None:
             "injured": as_bool(row["injured"]),
         })
     conn.close()
+    member_rows.append({
+        "expeditionId": "2004-EVER04148", "personKey": FREDDY_KEY,
+        "year": 2004, "mountain": "Everest", "name": "Freddy T. Bear",
+        "firstName": "Freddy T.", "lastName": "Bear", "citizenship": "Ireland",
+        "age": None, "status": "Educational companion", "occupation": "Expedition mascot",
+        "leader": False, "support": True, "hired": False, "sherpa": False,
+        "summit": False, "claimed": False, "disputed": False, "highPoint": False,
+        "oxygen": None, "died": False, "deathDate": "", "deathType": 0,
+        "deathHeight": 0, "deathClass": 0, "ams": False, "weather": False,
+        "injured": False, "easterEgg": True,
+    })
     MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(member_rows):,} expedition members to {MEMBERS_OUT}")
 
@@ -251,7 +284,7 @@ def main() -> None:
         "expeditionCount": len(rows),
         "coverageStart": min(years) if years else None,
         "coverageEnd": max(years) if years else None,
-        "memberRowCount": len(member_rows),
+        "memberRowCount": sum(1 for row in member_rows if not row.get("easterEgg")),
     }, separators=(",", ":")), encoding="utf-8")
     print(f"Exported site metadata to {META_OUT}")
 
