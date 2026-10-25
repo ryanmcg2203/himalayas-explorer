@@ -60,7 +60,30 @@
       if (definition) tip.querySelector('span').textContent += ' ' + definition;
       tip.dataset.formatted = 'true';
     });
-    new MutationObserver(formatTips).observe(chart, { childList: true, subtree: true });
+    const repairRateYearSpine = () => {
+      const split = document.querySelector('#split');
+      const metric = document.querySelector('#metric');
+      if (!split || !metric || split.value !== 'year' || metric.value !== 'rate') return;
+      const bars = chart.querySelector('.bars');
+      if (!bars) { delete chart.dataset.spineKey; return; }
+      const columns = [...bars.querySelectorAll('.bar-col')];
+      const years = columns.map(column => Number.parseInt(column.querySelector('.bar-tip')?.textContent || '', 10)).filter(Number.isFinite);
+      const range = document.querySelector('#chart-subtitle')?.textContent.match(/(\d{4})–(\d{4})/);
+      if (!range || !years.length) return;
+      const first = Number(range[1]), last = Number(range[2]), key = first + '-' + last + '-' + columns.length;
+      if (chart.dataset.spineKey === key || last - first > 250) return;
+      const byYear = new Map(columns.map(column => [Number.parseInt(column.querySelector('.bar-tip')?.textContent || '', 10), column]));
+      const fragment = document.createDocumentFragment();
+      for (let year = first; year <= last; year += 1) {
+        const column = byYear.get(year) || document.createElement('div');
+        if (!column.className) { column.className = 'bar-col'; column.setAttribute('aria-label', year + ' · no member attempts'); }
+        fragment.appendChild(column);
+      }
+      bars.replaceChildren(fragment);
+      chart.dataset.spineKey = key;
+    };
+    const repairChart = () => { formatTips(); repairRateYearSpine(); };
+    new MutationObserver(repairChart).observe(chart, { childList: true, subtree: true });
   }
   if (document.querySelector('#search') && document.querySelector('#result')) {
     const replace = history.replaceState.bind(history);
