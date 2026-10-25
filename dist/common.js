@@ -9,6 +9,13 @@
   function esc(value) { return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
   function fmt(value) { return Number(value || 0).toLocaleString(); }
   global.HimalayasCommon = { bool, seasonLabel, oxygenLabel, esc, fmt };
+  if (document.querySelector('#activity-list')) {
+    const fetchWithCompactActivity = global.fetch;
+    global.fetch = function (input, init) {
+      if (input === 'expedition_members.json') input = 'person_activity.json';
+      return fetchWithCompactActivity(input, init);
+    };
+  }
   const tableBody = document.querySelector('#table-body');
   if (tableBody) {
     const headers = [...tableBody.closest('table').querySelectorAll('thead th')];
@@ -42,8 +49,19 @@
   while (textWalker.nextNode()) {
     const node = textWalker.currentNode;
     if (!node.parentElement.closest('script,style')) {
-      node.nodeValue = node.nodeValue.replace(/Loading local data…/g, 'Loading data…').replace(/ · local derived data/g, '');
+      node.nodeValue = node.nodeValue.replace(/Loading local data…/g, 'Loading data…').replace(/ · local derived data/g, '').replace(/Member attempts are recorded expedition members excluding hired staff\./g, 'Member attempts use recorded expedition member totals; hired staff excluded.').replace(/summits \/ member attempts/g, 'summits / recorded member attempts');
     }
+  }
+  const normalizeMetricCopy = () => {
+    const caption = document.querySelector('#caption');
+    if (caption) {
+      const next = caption.innerHTML.replace(/Member attempts are recorded expedition members excluding hired staff\./g, 'Member attempts use recorded expedition member totals; hired staff excluded.').replace(/summits \/ member attempts/g, 'summits / recorded member attempts');
+      if (next !== caption.innerHTML) caption.innerHTML = next;
+    }
+  };
+  if (document.querySelector('#caption')) {
+    new MutationObserver(normalizeMetricCopy).observe(document.querySelector('#caption'), { childList: true, subtree: true });
+    normalizeMetricCopy();
   }
   const chart = document.querySelector('#chart');
   if (chart) {
@@ -61,38 +79,5 @@
       tip.dataset.formatted = 'true';
     });
     new MutationObserver(formatTips).observe(chart, { childList: true, subtree: true });
-  }
-  if (document.querySelector('#search') && document.querySelector('#result')) {
-    const replace = history.replaceState.bind(history);
-    let typing = false;
-    const searchUrl = value => {
-      const url = new URL(location.href);
-      if (value) url.searchParams.set('q', value);
-      else url.searchParams.delete('q');
-      return url.pathname + (url.searchParams.toString() ? '?' + url.searchParams : '') + url.hash;
-    };
-    const commitSearch = () => {
-      const input = document.querySelector('#search');
-      if (!input) return;
-      replace(history.state, '', searchUrl(input.value.trim()));
-      typing = false;
-    };
-    document.addEventListener('input', event => {
-      if (event.target.matches('#search')) typing = true;
-    }, true);
-    document.addEventListener('change', () => {
-      if (typing) commitSearch();
-    }, true);
-    document.addEventListener('keydown', event => {
-      if (typing && event.target.matches('#search') && event.key === 'Enter') commitSearch();
-    }, true);
-    history.replaceState = function (state, title, url) {
-      if (typing && url) {
-        const next = new URL(url, location.href);
-        next.searchParams.delete('q');
-        return replace(state, title, next.pathname + (next.searchParams.toString() ? '?' + next.searchParams : '') + next.hash);
-      }
-      return replace(state, title, url);
-    };
   }
 })(window);

@@ -31,6 +31,10 @@ python scripts/run_site.py
 that, `run_site.py` runs dbt, exports the site data, and starts the server in
 one step. Open <http://127.0.0.1:4173>. Set `PORT` to use another port.
 
+The generated JSON is intentionally local-only. Do not publish `dist/*.json`,
+`data/`, or the DuckDB file; the export command refuses to run unless invoked
+through `run_site.py` or with `HIMALAYAS_LOCAL_ONLY=1`.
+
 The peak stats sheet is available at
 <http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
 

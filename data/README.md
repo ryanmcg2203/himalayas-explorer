@@ -5,6 +5,8 @@ inputs at `data/bronze/` are generated from a local official Himalayan Database
 download. None of the raw database, bronze extracts, DuckDB file, or website
 exports are checked in or redistributed by this repository.
 
+These exports are local-only and must not be uploaded to a public static host.
+
 Source: [Himalayan Database downloads](https://www.himalayandatabase.com/downloads.html)
 
 The bronze layer includes `expeditions.json`, `peaks.json`, and compressed `members.json.gz`. The

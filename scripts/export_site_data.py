@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Export the dbt expedition mart to the static site's JSON contract."""
 import json
+import os
 from pathlib import Path
 
 import duckdb
@@ -14,6 +15,7 @@ PEAKS_INPUT = ROOT / "data" / "bronze" / "peaks.json"
 PEAKS_OUT = ROOT / "dist" / "peaks.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
 MEMBERS_OUT = ROOT / "dist" / "expedition_members.json"
+ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 META_OUT = ROOT / "dist" / "site_meta.json"
 REQUIRED_MART_FIELDS = {
     "id", "year", "mountain", "peak_id", "team", "hired", "participants",
@@ -42,6 +44,11 @@ def as_optional_bool(value):
 
 
 def main() -> None:
+    if os.environ.get("HIMALAYAS_LOCAL_ONLY") != "1":
+        raise SystemExit(
+            "Refusing to export database-derived site data without "
+            "HIMALAYAS_LOCAL_ONLY=1"
+        )
     conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("select * from mart_expeditions order by year, id")
     columns = [column[0] for column in result.description]
@@ -274,8 +281,23 @@ def main() -> None:
         "deathHeight": 0, "deathClass": 0, "ams": False, "weather": False,
         "injured": False, "easterEgg": True,
     })
+    activity_rows = [
+        {
+            "personKey": row["personKey"],
+            "expeditionId": row["expeditionId"],
+            "year": row["year"],
+            "mountain": row["mountain"],
+            "status": row["status"],
+            "hired": row["hired"],
+            "summit": row["summit"],
+            "died": row["died"],
+        }
+        for row in member_rows
+    ]
     MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(member_rows):,} expedition members to {MEMBERS_OUT}")
+    ACTIVITY_OUT.write_text(json.dumps(activity_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported {len(activity_rows):,} compact person activity rows to {ACTIVITY_OUT}")
 
     peak_count = len(json.loads(PEAKS_INPUT.read_text(encoding="utf-8")))
     years = [row["year"] for row in rows]

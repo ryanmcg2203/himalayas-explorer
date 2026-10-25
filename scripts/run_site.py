@@ -20,6 +20,7 @@ def run(command: list[str], *, env: dict[str, str] | None = None) -> None:
 def main() -> None:
     env = os.environ.copy()
     env["DBT_PROFILES_DIR"] = str(ROOT)
+    env["HIMALAYAS_LOCAL_ONLY"] = "1"
 
     run(["dbt", "build"], env=env)
     run([sys.executable, "scripts/export_site_data.py"])
