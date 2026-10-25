@@ -13,3 +13,5 @@ jobs:
         with:
           python-version: '3.x'
       - run: python scripts/check_repo_hygiene.py
+      - run: node tests/metrics.test.js
+      - run: node --check dist/metrics.js

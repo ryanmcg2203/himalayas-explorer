@@ -15,12 +15,21 @@ PEOPLE_OUT = ROOT / "dist" / "people.json"
 ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 MEMBERS_OUT = ROOT / "dist" / "expedition_members.json"
 META_OUT = ROOT / "dist" / "site_meta.json"
+REQUIRED_MART_FIELDS = {
+    "id", "year", "mountain", "peak_id", "team", "hired", "participants",
+    "summiters", "summit_hired", "member_summiters", "deaths", "member_deaths",
+    "hired_deaths", "season", "disputed", "route", "route2", "route3", "route4",
+    "route_normalized", "route2_normalized", "route3_normalized", "route4_normalized",
+}
 
 
 def main() -> None:
     conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("select * from mart_expeditions order by year, id")
     columns = [column[0] for column in result.description]
+    missing = REQUIRED_MART_FIELDS.difference(columns)
+    if missing:
+        raise SystemExit(f"mart_expeditions is missing required fields: {', '.join(sorted(missing))}")
     rows = [dict(zip(columns, values)) for values in result.fetchall()]
     conn.close()
     for row in rows:
@@ -35,6 +44,10 @@ def main() -> None:
         row["memberSummiters"] = row.pop("member_summiters")
         row["memberDeaths"] = row.pop("member_deaths")
         row["hiredDeaths"] = row.pop("hired_deaths")
+        row["routeNormalized"] = row.pop("route_normalized")
+        row["route2Normalized"] = row.pop("route2_normalized")
+        row["route3Normalized"] = row.pop("route3_normalized")
+        row["route4Normalized"] = row.pop("route4_normalized")
         row["leaderOrRole"] = row.pop("leader_or_role")
         row["leaderKind"] = row.pop("leader_kind")
         row["leaderName"] = row.pop("leader_name")
