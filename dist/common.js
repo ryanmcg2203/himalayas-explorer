@@ -45,6 +45,23 @@
       node.nodeValue = node.nodeValue.replace(/Loading local data…/g, 'Loading data…').replace(/ · local derived data/g, '');
     }
   }
+  const chart = document.querySelector('#chart');
+  if (chart) {
+    const style = document.createElement('style');
+    style.textContent = '.bar-tip{min-width:170px;max-width:220px;white-space:normal;text-align:left;padding:10px 12px;line-height:1.35}.bar-tip strong,.bar-tip b,.bar-tip span{display:block}.bar-tip strong{font-size:12px}.bar-tip b{color:#17605d;font-size:13px;margin-top:3px}.bar-tip span{border-top:1px solid #b8d4ce;margin-top:7px;padding-top:7px;color:#46635f;font-size:11px}';
+    document.head.appendChild(style);
+    const formatTips = () => chart.querySelectorAll('.bar-tip').forEach(tip => {
+      if (tip.dataset.formatted) return;
+      const parts = tip.textContent.split(' · ');
+      if (parts.length < 2) return;
+      const detail = parts.slice(2).join(' · ');
+      const definition = parts[1].toLowerCase().includes('rate') ? 'Member summits ÷ member attempts.' : '';
+      tip.innerHTML = '<strong>' + esc(parts[0]) + '</strong><b>' + esc(parts[1]) + '</b>' + (detail ? '<span>' + esc(detail) + '</span>' : '');
+      if (definition) tip.querySelector('span').textContent += ' ' + definition;
+      tip.dataset.formatted = 'true';
+    });
+    new MutationObserver(formatTips).observe(chart, { childList: true, subtree: true });
+  }
   if (document.querySelector('#search') && document.querySelector('#result')) {
     const replace = history.replaceState.bind(history);
     let typing = false;
