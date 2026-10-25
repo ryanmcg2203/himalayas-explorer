@@ -14,6 +14,7 @@ PEAKS_OUT = ROOT / "dist" / "peaks.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
 ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 MEMBERS_OUT = ROOT / "dist" / "expedition_members.json"
+META_OUT = ROOT / "dist" / "site_meta.json"
 
 
 def main() -> None:
@@ -137,6 +138,17 @@ def main() -> None:
     conn.close()
     MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(member_rows):,} expedition members to {MEMBERS_OUT}")
+
+    peak_count = len(json.loads(PEAKS_INPUT.read_text(encoding="utf-8")))
+    years = [row["year"] for row in rows]
+    META_OUT.write_text(json.dumps({
+        "peakCount": peak_count,
+        "expeditionCount": len(rows),
+        "coverageStart": min(years) if years else None,
+        "coverageEnd": max(years) if years else None,
+        "memberRowCount": len(member_rows),
+    }, separators=(",", ":")), encoding="utf-8")
+    print(f"Exported site metadata to {META_OUT}")
 
 
 if __name__ == "__main__":
