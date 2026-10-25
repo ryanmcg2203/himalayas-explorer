@@ -37,6 +37,12 @@ def clean(value):
     return value
 
 
+def optional_bool(value):
+    if value is None or value == "":
+        return None
+    return bool(value)
+
+
 def main() -> None:
     if len(sys.argv) != 2:
         raise SystemExit("Usage: python3 scripts/build_data.py /path/to/Himalayan Database.zip")
@@ -90,7 +96,7 @@ def main() -> None:
                 "result": result,
                 "label": label,
                 "style": style,
-                "oxygen": "Yes" if bool(row.get("O2USED")) else "No",
+                "oxygen": optional_bool(row.get("O2USED")),
                 "leader": clean(row.get("LEADERS")).strip(),
                 "nation": clean(row.get("NATION")).strip(),
                 "route": route,
@@ -159,7 +165,7 @@ def main() -> None:
             "claimed": bool(row.get("MCLAIMED")),
             "disputed": bool(row.get("MDISPUTED")),
             "highPoint": bool(row.get("MHIGHPT")),
-            "oxygen": bool(row.get("MO2USED")),
+            "oxygen": optional_bool(row.get("MO2USED")),
             "death": bool(row.get("DEATH")),
             "deathDate": clean(row.get("DEATHDATE")),
             "deathType": int(row.get("DEATHTYPE") or 0),

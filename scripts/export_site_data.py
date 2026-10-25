@@ -12,7 +12,6 @@ OUT = ROOT / "dist" / "expeditions.json"
 PEAKS_INPUT = ROOT / "data" / "bronze" / "peaks.json"
 PEAKS_OUT = ROOT / "dist" / "peaks.json"
 PEOPLE_OUT = ROOT / "dist" / "people.json"
-ACTIVITY_OUT = ROOT / "dist" / "person_activity.json"
 MEMBERS_OUT = ROOT / "dist" / "expedition_members.json"
 META_OUT = ROOT / "dist" / "site_meta.json"
 REQUIRED_MART_FIELDS = {
@@ -21,6 +20,24 @@ REQUIRED_MART_FIELDS = {
     "hired_deaths", "season", "disputed", "route", "route2", "route3", "route4",
     "route_normalized", "route2_normalized", "route3_normalized", "route4_normalized",
 }
+BOOLEAN_FIELDS = {
+    "disputed", "claimed", "has_recorded_summit", "has_member_summit",
+    "has_undisputed_summit",
+}
+
+
+def as_bool(value):
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "y", "yes"}
+    return bool(value) if value is not None else False
+
+
+def as_optional_bool(value):
+    if value is None or value == "":
+        return None
+    if isinstance(value, str) and value.strip().lower() in {"no", "n", "0", "false"}:
+        return False
+    return as_bool(value)
 
 
 def main() -> None:
@@ -53,6 +70,48 @@ def main() -> None:
         row["leaderName"] = row.pop("leader_name")
         row["sourceResult"] = row["result"]
         row["sourceLabel"] = row["label"]
+        row["oxygen"] = as_optional_bool(row["oxygen"])
+        row["hasRecordedSummit"] = as_bool(row.pop("has_recorded_summit"))
+        row["hasMemberSummit"] = as_bool(row.pop("has_member_summit"))
+        row["hasUndisputedSummit"] = as_bool(row.pop("has_undisputed_summit"))
+        for field in BOOLEAN_FIELDS.intersection(row):
+            row[field] = as_bool(row[field])
+    conn = duckdb.connect(str(DB), read_only=True)
+    roster_counts = conn.execute("""
+        select expedition_id,
+               count(*) as roster_rows,
+               sum(case when not is_hired then 1 else 0 end) as roster_member_rows,
+               sum(case when is_hired then 1 else 0 end) as roster_hired_rows,
+               sum(case when not is_hired and summit_success then 1 else 0 end) as roster_member_summits,
+               sum(case when is_hired and summit_success then 1 else 0 end) as roster_hired_summits,
+               sum(case when not is_hired and died then 1 else 0 end) as roster_member_deaths,
+               sum(case when is_hired and died then 1 else 0 end) as roster_hired_deaths,
+               sum(case when summit_disputed then 1 else 0 end) as roster_disputed_summits,
+               sum(case when summit_claimed then 1 else 0 end) as roster_claimed_summits
+        from fct_expedition_member
+        where full_name <> ''
+        group by expedition_id
+    """).fetchall()
+    conn.close()
+    rows_by_id = {row["id"]: row for row in rows}
+    roster_fields = (
+        "rosterRows", "rosterMemberRows", "rosterHiredRows", "rosterMemberSummits",
+        "rosterHiredSummits", "rosterMemberDeaths", "rosterHiredDeaths",
+        "rosterDisputedSummits", "rosterClaimedSummits",
+    )
+    for row in rows:
+        row.update({field: 0 for field in roster_fields})
+    for values in roster_counts:
+        key = values[0]
+        if key not in rows_by_id:
+            continue
+        rows_by_id[key].update({
+            "rosterRows": int(values[1]), "rosterMemberRows": int(values[2]),
+            "rosterHiredRows": int(values[3]), "rosterMemberSummits": int(values[4]),
+            "rosterHiredSummits": int(values[5]), "rosterMemberDeaths": int(values[6]),
+            "rosterHiredDeaths": int(values[7]), "rosterDisputedSummits": int(values[8]),
+            "rosterClaimedSummits": int(values[9]),
+        })
     OUT.write_text(json.dumps(rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(rows):,} rows to {OUT}")
 
@@ -149,23 +208,6 @@ def main() -> None:
     print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
 
     conn = duckdb.connect(str(DB), read_only=True)
-    activity = conn.execute("""
-        select person_key, expedition_id, year, mountain, status,
-               is_hired, summit_success, died
-        from fct_expedition_member
-        where full_name <> ''
-        order by person_key, year
-    """).fetchall()
-    conn.close()
-    activity_rows = [{
-        "personKey": row[0], "expeditionId": row[1], "year": row[2],
-        "mountain": row[3], "status": row[4], "hired": row[5],
-        "summit": row[6], "died": row[7],
-    } for row in activity]
-    ACTIVITY_OUT.write_text(json.dumps(activity_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    print(f"Exported {len(activity_rows):,} activity rows to {ACTIVITY_OUT}")
-
-    conn = duckdb.connect(str(DB), read_only=True)
     result = conn.execute("""
         select expedition_id, person_key, full_name, first_name, last_name,
                citizenship, age, status, occupation, is_leader, is_support,
@@ -186,15 +228,16 @@ def main() -> None:
             "name": row["full_name"], "firstName": row["first_name"],
             "lastName": row["last_name"], "citizenship": row["citizenship"],
             "age": row["age"], "status": row["status"], "occupation": row["occupation"],
-            "leader": row["is_leader"], "support": row["is_support"],
-            "hired": row["is_hired"], "sherpa": row["is_sherpa"],
-            "summit": row["summit_success"], "claimed": row["summit_claimed"],
-            "disputed": row["summit_disputed"], "highPoint": row["reached_high_point"],
-            "oxygen": row["oxygen_used"], "died": row["died"],
+            "leader": as_bool(row["is_leader"]), "support": as_bool(row["is_support"]),
+            "hired": as_bool(row["is_hired"]), "sherpa": as_bool(row["is_sherpa"]),
+            "summit": as_bool(row["summit_success"]), "claimed": as_bool(row["summit_claimed"]),
+            "disputed": as_bool(row["summit_disputed"]), "highPoint": as_bool(row["reached_high_point"]),
+            "oxygen": None if row["oxygen_used"] is None else as_bool(row["oxygen_used"]),
+            "died": as_bool(row["died"]),
             "deathDate": row["death_date"], "deathType": row["death_type"],
             "deathHeight": row["death_height_m"], "deathClass": row["death_class"],
-            "ams": row["had_ams"], "weather": row["weather_related"],
-            "injured": row["injured"],
+            "ams": as_bool(row["had_ams"]), "weather": as_bool(row["weather_related"]),
+            "injured": as_bool(row["injured"]),
         })
     conn.close()
     MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
