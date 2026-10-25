@@ -8,7 +8,7 @@ from pathlib import PurePosixPath
 
 
 ALLOWED_DATA = {"data/README.md"}
-ALLOWED_DIST_SUFFIXES = {".html"}
+ALLOWED_DIST_SUFFIXES = {".html", ".js"}
 BLOCKED_SUFFIXES = {
     ".csv", ".csv.gz", ".dbf", ".duckdb", ".gz", ".json", ".ndjson",
     ".parquet", ".zip",

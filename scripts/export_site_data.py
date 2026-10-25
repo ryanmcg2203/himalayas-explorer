@@ -58,7 +58,26 @@ def main() -> None:
 
     if not PEAKS_INPUT.exists():
         raise SystemExit(f"Missing {PEAKS_INPUT}; run scripts/build_data.py first")
-    PEAKS_OUT.write_bytes(PEAKS_INPUT.read_bytes())
+    conn = duckdb.connect(str(DB), read_only=True)
+    result = conn.execute("select * from mart_peaks order by name")
+    columns = [column[0] for column in result.description]
+    peak_rows = []
+    for values in result.fetchall():
+        row = dict(zip(columns, values))
+        for key, value in row.items():
+            if hasattr(value, "item"):
+                row[key] = value.item()
+        row["peakId"] = row.pop("peak_id")
+        row["memberAttempts"] = row.pop("member_attempts")
+        row["memberSummits"] = row.pop("member_summits")
+        row["memberDeaths"] = row.pop("member_deaths")
+        row["hiredDeaths"] = row.pop("hired_deaths")
+        row["memberSummitRate"] = row.pop("member_summit_rate")
+        raw_decades = json.loads(row.pop("decade_counts"))
+        row["decadeCounts"] = {str(int(float(key))): value for key, value in raw_decades.items()}
+        peak_rows.append(row)
+    conn.close()
+    PEAKS_OUT.write_text(json.dumps(peak_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported peak metadata to {PEAKS_OUT}")
 
     conn = duckdb.connect(str(DB), read_only=True)
