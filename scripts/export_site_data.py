@@ -270,7 +270,7 @@ def main() -> None:
         "age": None, "status": "Educational companion", "occupation": "Expedition mascot",
         "leader": False, "support": True, "hired": False, "sherpa": False,
         "summit": False, "claimed": False, "disputed": False, "highPoint": False,
-        "oxygen": None, "died": False, "deathDate": "", "deathType": 0,
+        "oxygen": True, "died": False, "deathDate": "", "deathType": 0,
         "deathHeight": 0, "deathClass": 0, "ams": False, "weather": False,
         "injured": False, "easterEgg": True,
     })
