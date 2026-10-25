@@ -1,6 +1,12 @@
 data/*
 !data/README.md
 !data/.gitkeep
+dist/*
+!dist/
+!dist/*.html
+!dist/*.js
+!dist/vendor/
+!dist/vendor/*.js
 *.zip
 *.dbf
 *.duckdb
@@ -10,12 +16,6 @@ data/*
 *.ndjson.gz
 *.csv
 *.csv.gz
-dist/*.json
-dist/*.csv
-dist/*.csv.gz
-dist/*.parquet
-dist/*.ndjson
-dist/*.ndjson.gz
 .venv/
 .ve/
 .user.yml

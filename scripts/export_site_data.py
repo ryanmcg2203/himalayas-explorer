@@ -27,6 +27,28 @@ BOOLEAN_FIELDS = {
     "disputed", "claimed", "has_recorded_summit", "has_member_summit",
     "has_undisputed_summit",
 }
+EXPORT_SCHEMAS = {
+    "peak export": {
+        "peakId", "name", "heightM", "expeditions", "memberAttempts",
+        "memberSummits", "memberDeaths", "hiredDeaths", "deaths",
+        "memberSummitRate", "decadeCounts",
+    },
+    "people export": {
+        "personKey", "name", "citizenship", "identityConfidence", "identityMethod",
+        "appearances", "summits", "deaths", "hiredAppearances", "peaks", "years",
+        "birthYear", "identityReason", "possibleMerge", "firstYear", "lastYear",
+        "topPeakId", "topPeak",
+    },
+    "member export": {
+        "expeditionId", "personKey", "year", "mountain", "name", "citizenship",
+        "age", "status", "occupation", "leader", "support", "hired", "sherpa",
+        "summit", "claimed", "disputed", "highPoint", "oxygen", "died", "deathDate",
+        "deathType", "deathHeight", "deathClass", "ams", "weather", "injured",
+    },
+    "activity export": {
+        "personKey", "expeditionId", "year", "mountain", "status", "hired", "summit", "died",
+    },
+}
 
 
 def as_bool(value):
@@ -41,6 +63,15 @@ def as_optional_bool(value):
     if isinstance(value, str) and value.strip().lower() in {"no", "n", "0", "false"}:
         return False
     return as_bool(value)
+
+
+def validate_export(rows, label):
+    required = EXPORT_SCHEMAS[label]
+    for index, row in enumerate(rows):
+        missing = sorted(required.difference(row))
+        if missing:
+            raise SystemExit(f"{label} row {index} is missing fields: {', '.join(missing)}")
+    return rows
 
 
 def main() -> None:
@@ -144,6 +175,7 @@ def main() -> None:
         row["decadeCounts"] = {str(int(float(key))): value for key, value in raw_decades.items()}
         peak_rows.append(row)
     conn.close()
+    validate_export(peak_rows, "peak export")
     PEAKS_OUT.write_text(json.dumps(peak_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported peak metadata to {PEAKS_OUT}")
 
@@ -233,6 +265,7 @@ def main() -> None:
         "easterEgg": True,
     })
     people_rows.sort(key=lambda item: (-item["appearances"], item["name"]))
+    validate_export(people_rows, "people export")
     PEOPLE_OUT.write_text(json.dumps(people_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
 
@@ -294,6 +327,8 @@ def main() -> None:
         }
         for row in member_rows
     ]
+    validate_export(member_rows, "member export")
+    validate_export(activity_rows, "activity export")
     MEMBERS_OUT.write_text(json.dumps(member_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(member_rows):,} expedition members to {MEMBERS_OUT}")
     ACTIVITY_OUT.write_text(json.dumps(activity_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

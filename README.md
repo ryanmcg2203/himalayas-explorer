@@ -14,52 +14,34 @@ metric choices visible: the chart can show expeditions, member summits,
 success rate, or deaths, grouped by year, decade, season, oxygen use, or
 member/hired-staff population.
 
-## Run it
+## Quickstart
 
-The repository contains code and documentation only. Set up the environment
-once, then build the local snapshot and run the explorer:
+This is a local-only build. First obtain the current archive from the
+[Himalayan Database downloads page](https://www.himalayandatabase.com/downloads.html),
+then run:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python scripts/build_data.py "/path/to/Himalayan Database.zip"
-python scripts/run_site.py
+DBT_PROFILES_DIR="$PWD" dbt build
+HIMALAYAS_LOCAL_ONLY=1 python scripts/export_site_data.py
+python -m http.server 4173 --directory dist
 ```
 
-`build_data.py` is only needed when importing a new database snapshot. After
-that, `run_site.py` runs dbt, exports the site data, and starts the server in
-one step. Open <http://127.0.0.1:4173>. Set `PORT` to use another port.
+Open <http://127.0.0.1:4173>. The generated database and JSON exports stay
+local and must not be uploaded to a public static host. The member layer and
+provisional identity model are rebuilt from the same snapshot; do not treat a
+profile as a confirmed real-world identity.
 
-The generated JSON is intentionally local-only. Do not publish `dist/*.json`,
-`data/`, or the DuckDB file; the export command refuses to run unless invoked
-through `run_site.py` or with `HIMALAYAS_LOCAL_ONLY=1`.
-
-The peak stats sheet is available at
-<http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
-
-The peak browser is available at <http://127.0.0.1:4173/peaks.html>.
-
-The provisional climber browser and profile pages are available at
-<http://127.0.0.1:4173/people.html>.
-
-The expedition index and individual records are available at
-<http://127.0.0.1:4173/expeditions.html> and
-<http://127.0.0.1:4173/expedition.html?id=1953-...>.
+For the same workflow with one command after the initial import, use
+`python scripts/run_site.py`.
 
 The dbt models live in `models/` and the semantic checks live in `tests/`. The
-DuckDB file and generated JSON exports are intentionally local. The member
-layer and provisional identity model are rebuilt from the same snapshot; do
-not treat a profile as a confirmed real-world identity.
-
-To rebuild from a newer official snapshot, download the current database
-archive from the [Himalayan Database downloads page](https://www.himalayandatabase.com/downloads.html)
-and repeat the commands above.
-
-The raw archive, bronze extracts (including peak metadata), DuckDB database, and static JSON exports are
-not checked in. They are ignored locally. The importer creates stable IDs for
-source IDs that collide across centuries, while preserving the original source
-ID.
+raw archive, bronze extracts, DuckDB database, and static JSON exports are
+ignored locally. The importer creates stable IDs for source IDs that collide
+across centuries while preserving the original source ID.
 
 ## Source and attribution
 
