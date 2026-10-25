@@ -120,6 +120,30 @@ def main() -> None:
         person["peaks"] = sorted(person["peaks"])
         person["years"] = sorted(person["years"])
         people_rows.append(person)
+    conn = duckdb.connect(str(DB), read_only=True)
+    profile_rows = conn.execute("""
+        select person_key, year_of_birth, identity_reason, possible_merge,
+               first_year, last_year, top_peak_id, top_peak, peaks, years
+        from mart_person_profile
+    """).fetchall()
+    conn.close()
+    people_by_key = {person["personKey"]: person for person in people_rows}
+    for values in profile_rows:
+        key, birth_year, reason, possible_merge, first_year, last_year, top_peak_id, top_peak, peaks_json, years_json = values
+        person = people_by_key.get(key)
+        if not person:
+            continue
+        person.update({
+            "birthYear": birth_year,
+            "identityReason": reason,
+            "possibleMerge": bool(possible_merge),
+            "firstYear": first_year,
+            "lastYear": last_year,
+            "topPeakId": top_peak_id,
+            "topPeak": top_peak,
+            "peaks": json.loads(peaks_json),
+            "years": json.loads(years_json),
+        })
     people_rows.sort(key=lambda item: (-item["appearances"], item["name"]))
     PEOPLE_OUT.write_text(json.dumps(people_rows, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"Exported {len(people_rows):,} people to {PEOPLE_OUT}")
