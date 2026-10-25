@@ -16,21 +16,20 @@ member/hired-staff population.
 
 ## Run it
 
-The repository contains code and documentation only. To build the local
-snapshot and run the explorer:
+The repository contains code and documentation only. Set up the environment
+once, then build the local snapshot and run the explorer:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python scripts/build_data.py "/path/to/Himalayan Database.zip"
-DBT_PROFILES_DIR=. dbt build
-python scripts/export_site_data.py
-python3 -m http.server 4173 --directory dist
+python scripts/run_site.py
 ```
 
-Then open <http://127.0.0.1:4173>. If port 4173 is already in use, stop the
-existing local server or choose another port.
+`build_data.py` is only needed when importing a new database snapshot. After
+that, `run_site.py` runs dbt, exports the site data, and starts the server in
+one step. Open <http://127.0.0.1:4173>. Set `PORT` to use another port.
 
 The peak stats sheet is available at
 <http://127.0.0.1:4173/peak.html?peak=Everest> after the local data rebuild.
