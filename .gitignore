@@ -5,6 +5,10 @@ dist/*
 !dist/
 !dist/*.html
 !dist/*.js
+!dist/styles/
+!dist/styles/*.css
+!dist/scripts/
+!dist/scripts/*.js
 !dist/vendor/
 !dist/vendor/*.js
 *.zip

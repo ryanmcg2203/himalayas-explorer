@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071014"><title>Peak stats - Himalayas Explorer</title>
+
+
+<link rel="stylesheet" href="styles/peak.css">
+</head>
+<body><main class="shell">
+<header class="topbar"><a class="brand" href="index.html"><div class="mark">▲</div><div><strong>Himalayas Explorer</strong></div></a><nav class="site-nav"><a href="index.html">Explore</a><a class="active" href="peaks.html">Peaks</a><a href="people.html">People</a><a href="expeditions.html">Expeditions</a></nav></header>
+<div id="error" class="error" hidden></div><section class="hero" id="hero"><div><div class="eyebrow">Peak stats sheet</div><h1 id="name">Loading peak…</h1><div class="meta" id="meta"></div></div><div class="hero-note"><select class="population" id="population" aria-label="Choose population"><option value="members">Members</option><option value="hired">Hired staff</option><option value="all">All participants</option></select><br><select class="peak-select" id="peak-select" aria-label="Choose a peak"></select><br><span id="peak-note">Select a peak to inspect its record.</span></div></section>
+<section class="stats" id="stats"><div class="stat"><b id="stat-attempts">-</b><span id="attempt-label">Member attempts</span><small>recorded expedition counts</small></div><div class="stat"><b id="stat-summits">-</b><span id="summit-label">Member summits</span><small>summit records</small></div><div class="stat"><b id="stat-deaths">-</b><span id="death-label">Member deaths</span><small>same population as above</small></div><div class="stat"><b id="stat-rate">-</b><span id="rate-label">Member summit rate</span><small id="rate-note">summits / recorded attempts · n = -</small></div></section><div class="risk-split" id="risk-split"></div>
+<section class="grid" id="content"><div class="panel"><div class="panel-head"><h2>Year by year</h2><span id="sort-note">newest first · click a heading to sort</span></div><div class="table-wrap"><table class="table"><thead><tr><th tabindex="0" aria-sort="descending" data-sort="year">Year</th><th tabindex="0" aria-sort="none" data-sort="expeditions">Expeditions</th><th tabindex="0" aria-sort="none" data-sort="summits">Summits</th><th tabindex="0" aria-sort="none" data-sort="deaths">Deaths</th><th tabindex="0" aria-sort="none" data-sort="rate" id="rate-header">Member summit rate</th></tr></thead><tbody id="year-table"></tbody></table></div></div><aside><div class="panel"><div class="panel-head"><h2>Season activity</h2><span>expeditions</span></div><div class="heat" id="season-heat"></div></div><div class="panel" style="margin-top:20px"><div class="panel-head"><h2>Common routes</h2><span>normalized route fields</span></div><div class="routes" id="routes"></div></div></aside></section>
+<section class="panel" id="context-panel" style="margin-top:20px"><div class="panel-head"><h2>Peak context</h2><span>definitions</span></div><div class="note" id="context"></div></section>
+<footer class="footer"><span><a href="https://www.himalayandatabase.com/" target="_blank" rel="noreferrer">Source: The Himalayan Database ©</a> · local derived data</span></footer></main>
+<script src="metrics.js"></script><script src="scripts/peak.js"></script>
+</body></html>

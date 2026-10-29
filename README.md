@@ -38,6 +38,11 @@ profile as a confirmed real-world identity.
 For the same workflow with one command after the initial import, use
 `python scripts/run_site.py`.
 
+The browser source lives in `src/`. Run `python scripts/build_site.py` after
+editing it to rebuild the generated `dist/` frontend. If working from an older
+checkout that predates the source tree, `python scripts/build_site.py
+--bootstrap` extracts the existing checked-in pages into `src/` first.
+
 The dbt models live in `models/` and the semantic checks live in `tests/`. The
 raw archive, bronze extracts, DuckDB database, and static JSON exports are
 ignored locally. The importer creates stable IDs for source IDs that collide

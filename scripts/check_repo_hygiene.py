@@ -9,6 +9,7 @@ from pathlib import PurePosixPath
 
 
 ALLOWED_DATA = {"data/README.md"}
+ALLOWED_ROOT_FILES = {"package.json"}
 ALLOWED_DIST_SUFFIXES = {".html", ".js"}
 MAX_TRACKED_FILE_BYTES = 1_000_000
 BLOCKED_SUFFIXES = {
@@ -41,7 +42,7 @@ def main() -> int:
             violations.append(filename)
         if filename.startswith("dist/") and path.suffix.lower() not in ALLOWED_DIST_SUFFIXES:
             violations.append(filename)
-        if suffix in BLOCKED_SUFFIXES:
+        if suffix in BLOCKED_SUFFIXES and filename not in ALLOWED_ROOT_FILES:
             violations.append(filename)
         try:
             if Path(filename).stat().st_size > MAX_TRACKED_FILE_BYTES:
@@ -53,7 +54,8 @@ def main() -> int:
     for filename in historical_files():
         path = PurePosixPath(filename)
         suffix = "".join(path.suffixes).lower()
-        if (filename.startswith("data/") and filename not in ALLOWED_DATA) or suffix in BLOCKED_SUFFIXES:
+        if ((filename.startswith("data/") and filename not in ALLOWED_DATA)
+                or (suffix in BLOCKED_SUFFIXES and filename not in ALLOWED_ROOT_FILES)):
             historical_violations.append(filename)
     if historical_violations:
         violations.extend(f"{filename} (present in git history)" for filename in sorted(set(historical_violations)))

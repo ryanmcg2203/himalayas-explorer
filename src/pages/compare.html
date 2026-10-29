@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#071014"><title>Compare peaks - Himalayas Explorer</title>
+<link rel="stylesheet" href="styles/compare.css">
+</head>
+<body><main class="shell">
+<header class="topbar"><a class="brand" href="index.html"><div class="mark">▲</div><div><strong>Himalayas Explorer</strong></div></a><nav class="site-nav"><a href="index.html">Explore</a><a href="peaks.html">Peaks</a><a class="active" href="compare.html">Compare</a><a href="people.html">People</a><a href="expeditions.html">Expeditions</a></nav></header>
+<section class="intro"><div class="eyebrow">Peak comparison</div><h1>Two mountains,<br><em>one record.</em></h1><p>Compare expedition volume, summit rates, deaths, seasons, and long-term activity side by side.</p></section>
+<section class="panel controls"><div class="field"><label for="left-peak">First peak</label><select id="left-peak"></select></div><div class="versus">vs</div><div class="field"><label for="right-peak">Second peak</label><select id="right-peak"></select></div></section>
+<div id="error" class="error" hidden></div>
+<section class="comparison" id="comparison" hidden><div class="cards"><article class="peak-card"><div class="eyebrow" id="left-label"></div><h2 id="left-name"></h2><div class="meta" id="left-meta"></div><div class="stats"><div><b id="left-expeditions"></b><span>Expeditions</span></div><div><b id="left-rate"></b><span>Member summit rate</span></div><div><b id="left-deaths"></b><span>All deaths</span></div></div></article><article class="peak-card"><div class="eyebrow" id="right-label"></div><h2 id="right-name"></h2><div class="meta" id="right-meta"></div><div class="stats"><div><b id="right-expeditions"></b><span>Expeditions</span></div><div><b id="right-rate"></b><span>Member summit rate</span></div><div><b id="right-deaths"></b><span>All deaths</span></div></div></article></div>
+<section class="panel detail"><div class="panel-head"><h2>Record comparison</h2><span>all values from the local snapshot</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Measure</th><th id="left-column"></th><th id="right-column"></th></tr></thead><tbody id="detail-rows"></tbody></table></div></section>
+<section class="lower"><section class="panel"><div class="panel-head"><h2>Activity by decade</h2><span>recorded expeditions</span></div><div class="table-wrap"><table class="table"><thead><tr><th>Decade</th><th id="left-decade"></th><th id="right-decade"></th></tr></thead><tbody id="decade-rows"></tbody></table></div></section><section class="panel"><div class="panel-head"><h2>Season activity</h2><span>expedition count</span></div><div class="seasons" id="season-rows"></div></section></div>
+</section>
+<footer class="footer"><span><a href="https://www.himalayandatabase.com/" target="_blank" rel="noreferrer">Source: The Himalayan Database ©</a> · local derived data</span></footer></main>
+<script src="scripts/compare.js"></script>
+</body></html>

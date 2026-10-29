@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -21,9 +22,15 @@ def main() -> None:
     env = os.environ.copy()
     env["DBT_PROFILES_DIR"] = str(ROOT)
     env["HIMALAYAS_LOCAL_ONLY"] = "1"
+    dbt = shutil.which("dbt") or str(Path(sys.prefix) / "bin" / "dbt")
+    if not Path(dbt).exists():
+        raise SystemExit(
+            "dbt was not found. Activate the project virtualenv or install "
+            "dbt-duckdb into the Python environment running this script."
+        )
 
-    run(["dbt", "build"], env=env)
-    run([sys.executable, "scripts/export_site_data.py"])
+    run([dbt, "build"], env=env)
+    run([sys.executable, "scripts/export_site_data.py"], env=env)
 
     print(f"Serving http://127.0.0.1:{PORT}  (Ctrl-C to stop)", flush=True)
     run([sys.executable, "-m", "http.server", PORT, "--directory", "dist"])

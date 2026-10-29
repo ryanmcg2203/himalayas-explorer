@@ -1,0 +1,9 @@
+{
+  "name": "himalayas-explorer-frontend",
+  "private": true,
+  "scripts": {
+    "build": "python3 scripts/build_site.py",
+    "bootstrap": "python3 scripts/build_site.py --bootstrap",
+    "check": "node --check dist/metrics.js && node --check dist/common.js"
+  }
+}
