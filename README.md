@@ -56,10 +56,58 @@ editing it to rebuild the generated `dist/` frontend. If working from an older
 checkout that predates the source tree, `python scripts/build_site.py
 --bootstrap` extracts the existing checked-in pages into `src/` first.
 
+## Data pipeline
+
+The pipeline has four layers:
+
+1. **Staging** — lightly cleans the imported expedition and member tables.
+2. **Intermediate** — classifies expedition eras and constructs provisional
+   identity groups for member records.
+3. **Marts** — creates the tables used by the explorer, including expeditions,
+   peaks, people, peak-year summaries, and member-level records.
+4. **Export** — converts the local DuckDB marts into JSON files consumed by the
+   static frontend.
+
+The dbt project materializes staging and intermediate models as views and the
+final marts as tables. Run `dbt build` to rebuild the models and execute the
+data-quality tests.
+
 The dbt models live in `models/` and the semantic checks live in `tests/`. The
 raw archive, bronze extracts, DuckDB database, and static JSON exports are
 ignored locally. The importer creates stable IDs for source IDs that collide
 across centuries while preserving the original source ID.
+
+### Inspecting the dbt project
+
+After building the local database and models, generate and serve the dbt
+documentation:
+
+```bash
+DBT_PROFILES_DIR="$PWD" dbt docs generate
+DBT_PROFILES_DIR="$PWD" dbt docs serve --port 8081
+```
+
+Then open <http://127.0.0.1:8081>. The documentation includes the model
+lineage graph, compiled SQL, model dependencies, and test results.
+
+The main lineage is:
+
+```text
+Himalayan Database archive
+          ↓
+      DuckDB import
+          ↓
+       dbt staging
+          ↓
+     dbt intermediate
+   identity + era logic
+          ↓
+       dbt marts
+          ↓
+     JSON site export
+          ↓
+   Static web explorer
+```
 
 Person profiles are provisional. Where a source row has no birth year, the
 local identity model may infer a birth-year cohort from the recorded age;
@@ -85,6 +133,11 @@ Himalayan Database must be credited to ‘The Himalayan Database ©.’” The s
 terms say that extracts, reports, and analyses may not be used or republished
 without consent, and that database content may not be copied or linked to
 internet websites without prior written permission.
+
+The database was developed from Elizabeth Hawley's expedition records with
+Richard Salisbury's database and computing work. This project is an independent
+interface and analysis layer; it is not the official Himalayan Database and
+does not alter the source archive.
 
 No official database files or generated extracts are included in this public
 repository. The site is therefore a local, derived-data explorer until
