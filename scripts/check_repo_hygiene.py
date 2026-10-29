@@ -10,7 +10,7 @@ from pathlib import PurePosixPath
 
 ALLOWED_DATA = {"data/README.md"}
 ALLOWED_ROOT_FILES = {"package.json"}
-ALLOWED_DIST_SUFFIXES = {".html", ".js"}
+ALLOWED_DIST_SUFFIXES = {".css", ".html", ".js"}
 MAX_TRACKED_FILE_BYTES = 1_000_000
 BLOCKED_SUFFIXES = {
     ".csv", ".csv.gz", ".dbf", ".duckdb", ".gz", ".json", ".ndjson",
