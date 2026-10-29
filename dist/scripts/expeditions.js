@@ -1,4 +1,4 @@
-let data=[],peaks=[],sortKey='year',sortDirection=-1,page=1;const pageSize=100,$=s=>document.querySelector(s),fmt=HimalayasCommon.fmt,esc=HimalayasCommon.esc;
+let data=[],peaks=[],sortKey='year',sortDirection=-1,page=1;const pageSize=50,$=s=>document.querySelector(s),fmt=HimalayasCommon.fmt,esc=HimalayasCommon.esc;
 function params(){return new URLSearchParams(location.search)}
 function updateUrl(){const p=new URLSearchParams(),existing=params(),q=$('#search').value.trim(),peak=$('#peak').value,year=$('#year').value,result=$('#result').value,deaths=$('#deaths').value;if(q)p.set('q',q);if(peak!=='all')p.set('peak',peak);if(year!=='all')p.set('year',year);if(result!=='all')p.set('result',result);if(deaths!=='all')p.set('deaths',deaths);if(existing.get('decade'))p.set('decade',existing.get('decade'));if(sortKey!=='year'||sortDirection!==-1){p.set('sort',sortKey);p.set('dir',sortDirection>0?'asc':'desc')}if(page>1)p.set('page',page);history.replaceState(null,'',location.pathname+(p.toString()?'?'+p:''))}
 function value(row,key){return key==='outcome'?row.sourceLabel:key==='id'?row.id:key==='year'?row.year:row[key]}
