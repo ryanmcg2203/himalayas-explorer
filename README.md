@@ -16,7 +16,9 @@ member/hired-staff population.
 
 ## Quickstart
 
-This is a local-only build. First obtain the current archive from the
+This is a local-only build. The repository does not contain the Himalayan
+Database archive, the DuckDB database, or generated JSON exports. To use the
+data pipeline, first obtain the current archive from the
 [Himalayan Database downloads page](https://www.himalayandatabase.com/downloads.html),
 then run:
 
@@ -38,6 +40,17 @@ profile as a confirmed real-world identity.
 For the same workflow with one command after the initial import, use
 `python scripts/run_site.py`.
 
+If the local database and exports already exist and you only want to inspect
+the frontend, run:
+
+```bash
+python scripts/build_site.py
+python -m http.server 4173 --directory dist
+```
+
+Then open <http://127.0.0.1:4173>. Frontend edits belong in `src/`; the build
+script copies them into the generated `dist/` directory.
+
 The browser source lives in `src/`. Run `python scripts/build_site.py` after
 editing it to rebuild the generated `dist/` frontend. If working from an older
 checkout that predates the source tree, `python scripts/build_site.py
@@ -52,6 +65,13 @@ Person profiles are provisional. Where a source row has no birth year, the
 local identity model may infer a birth-year cohort from the recorded age;
 rows with neither signal remain in an unresolved name group. These inferred
 groups are flagged for review and are not confirmed real-world identities.
+
+To run the repository checks:
+
+```bash
+python scripts/check_repo_hygiene.py
+node tests/metrics.test.js
+```
 
 ## Source and attribution
 
