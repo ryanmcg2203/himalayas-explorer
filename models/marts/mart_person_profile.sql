@@ -31,6 +31,10 @@ select
     d.identity_confidence,
     d.identity_method,
     case
+        when d.identity_method = 'unresolved_name_citizenship'
+            then 'No birth year or age signal; unresolved name group'
+        when d.identity_method = 'age_inferred_name_citizenship'
+            then 'Birth year inferred from age; review match'
         when d.year_of_birth is null and nullif(trim(coalesce(d.citizenship, '')), '') is null
             then 'No birth year or citizenship recorded'
         when d.year_of_birth is null then 'No birth year recorded'

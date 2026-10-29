@@ -48,6 +48,11 @@ raw archive, bronze extracts, DuckDB database, and static JSON exports are
 ignored locally. The importer creates stable IDs for source IDs that collide
 across centuries while preserving the original source ID.
 
+Person profiles are provisional. Where a source row has no birth year, the
+local identity model may infer a birth-year cohort from the recorded age;
+rows with neither signal remain in an unresolved name group. These inferred
+groups are flagged for review and are not confirmed real-world identities.
+
 ## Source and attribution
 
 This project is an independent exploration of the [Himalayan

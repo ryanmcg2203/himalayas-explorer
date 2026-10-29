@@ -2,7 +2,10 @@
 
 select
     m.id as expedition_member_id,
-    md5(lower(regexp_replace(trim(m.full_name), '\\s+', ' ', 'g')) || '|' || coalesce(m.year_of_birth, '') || '|' || lower(trim(coalesce(m.citizenship, '')))) as person_key,
+    i.person_key,
+    i.source_person_key,
+    i.identity_year_of_birth,
+    i.identity_method,
     m.expedition_id,
     e.mountain,
     m.peak_id,
@@ -36,4 +39,5 @@ select
     m.injured,
     case when e.id is null then false else true end as matched_expedition
 from {{ ref('stg_members') }} m
+join {{ ref('int_member_identity') }} i on i.id = m.id
 left join {{ ref('mart_expeditions') }} e on e.id = m.expedition_id
