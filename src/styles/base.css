@@ -2,6 +2,13 @@
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(circle at 85% -10%,#1b4242 0,transparent 34%),var(--bg);color:var(--text);font:14px/1.45 var(--sans)}
 a{color:var(--ice);text-decoration:none}
+a:not(.brand):not(.site-nav a):not(.result){text-decoration-line:underline;text-decoration-color:transparent;text-decoration-thickness:1px;text-underline-offset:3px;transition:color .15s ease,text-decoration-color .15s ease,background-color .15s ease}
+a:not(.brand):not(.site-nav a):not(.result):hover,a:not(.brand):not(.site-nav a):not(.result):focus-visible{color:var(--ice);text-decoration-color:currentColor}
+a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+.result{cursor:pointer;transition:background-color .15s ease,box-shadow .15s ease}
+.result:hover,.result:focus-visible{background:#13282d;box-shadow:inset 3px 0 var(--ice);outline:none}
+.table a{text-decoration-line:underline;text-decoration-color:transparent;text-decoration-thickness:1px;text-underline-offset:3px}
+.table a:hover,.table a:focus-visible{text-decoration-color:currentColor}
 .shell{max-width:1320px;margin:auto;padding:28px 34px 56px}
 .topbar{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:19px}
 .brand{display:flex;gap:12px;align-items:center;color:var(--text);text-decoration:none}
